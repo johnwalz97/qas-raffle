@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+    
+<html>
+<head>
+    <title>QAS Quilt Raffle</title>
+    <link rel="stylesheet" href="/css/foundation.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="/js/foundation.js"></script>
+    <script src="https://checkout.stripe.com/checkout.js"></script>
+</head>
+
+<body>
+    <div class="small-12 large-8 large-offset-2 columns" style="text-align: center">
+        <h1>Queen of All Saints Academy</h1>
+        <h2>Quilt Raffle - 2016 Fundraiser</h2>
+        <h4>Our goal is to raise $6000 for the general school fund.</h4>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="small-12 large-6 columns">
+            <img src="/img/Quilt.jpg" width="100%" height="auto">
+        </div>
+        <div class="small-12 large-6 columns">
+            <h3>97" x 76" Queen-Size Quilt</h3>
+            <p>This gorgeous quilt has been made and donated by Josie Haklin, a dedicated supporter of Queen of All Saints Academy. It is the perfect adornment for any wall or bed! The drawing will take place on Thursday, December 1, 2016. You need not be present to win. Tickets are $2 each or $5 for 3.</p>
+            <input type="number" id="amount" placeholder="Qty" min="1">
+            <button class="button" id="customButton">Buy Tickets</button>
+        </div>
+    </div>
+    <script>
+        var price;
+        var amount;
+        var handler = StripeCheckout.configure({
+            key: 'pk_test_qLa5iYcysOo3znUykkfiPcOq',
+            image: '/img/documentation/checkout/marketplace.png',
+            locale: 'auto',
+            token: function(token) {
+                console.log(token);
+                $.post(
+                       '/charge',
+                       {"token": token, "price": price, "amount": amount},
+                       function (response) {
+                            if (response.err) {
+                                alert("Sorry. Your card was declined!");
+                            } else {
+                                alert("Thank you. Your order went through.")
+                            }
+                       }
+                );
+            }
+        });
+      
+        $('#customButton').on('click', function(e) {
+            amount =  $('#amount').val();
+            if (amount >= 3) {
+                price = (((amount - (amount % 3)) / 3) * 500) + ((amount % 3) * 200);
+            } else if (amount > 0) {
+                price = amount * 200;
+            } else {
+                return false;
+            }
+            handler.open({
+              name: 'Complete Payment',
+              description: amount + ' tickets',
+              amount: price
+            });
+            e.preventDefault();
+        });
+        $(window).on('popstate', function() {
+            handler.close();
+        });
+    </script>
+</body>
+</html>
